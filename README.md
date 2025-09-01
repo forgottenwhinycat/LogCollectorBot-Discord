@@ -2,10 +2,6 @@
 
 _Transforming Discord Moderation with Intelligent Automation_
 
-- [ ] _last commit today_
-- [ ] _typescript 100.0%_
-- [ ] _languages 1_
-
 _Built with the tools and technologies:_
 
 [![JSON](https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=JSON)](https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=JSON) [![Markdown](https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=Markdown)](https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=Markdown) [![npm](https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm)](https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm) [![.ENV](https://img.shields.io/badge/.ENV-000000?style=for-the-badge)](https://img.shields.io/badge/.ENV-000000?style=for-the-badge) [![Nodemon](https://img.shields.io/badge/Nodemon-76D04A?style=for-the-badge&logo=Nodemon)](https://img.shields.io/badge/Nodemon-76D04A?style=for-the-badge&logo=Nodemon) [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=TypeScript)](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=TypeScript) [![ts-node](https://img.shields.io/badge/ts--node-3178C6?style=for-the-badge&logo=ts-node)](https://img.shields.io/badge/ts--node-3178C6?style=for-the-badge&logo=ts-node) [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=Discord)](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=Discord)
