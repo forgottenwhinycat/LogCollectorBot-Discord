@@ -17,6 +17,7 @@ import messageDelete from "../event/message/messageDelete";
 import messageUpdate from "../event/message/messageUpdate";
 import reactionAdd from "../event/message/reactions/reactionAdd";
 import reactionRemove from "../event/message/reactions/reactionRemove";
+import { moderationCommands } from "../event/message/moderationCommands";
 
 export function registerEvents(client: Client) {
   try {
@@ -33,6 +34,14 @@ export function registerEvents(client: Client) {
     if (typeof messageCreate !== "function") {
       throw new Error("Обробник події messageCreate не є функцією");
     }
+
+    client.on("messageCreate", async (message: Message) => {
+      await moderationCommands(message);
+
+      if (typeof messageCreate === "function") {
+        await messageCreate(message);
+      }
+    });
 
     client.on("messageCreate", messageCreate);
 
@@ -121,7 +130,7 @@ export function registerEvents(client: Client) {
     if (typeof guildMemberAdd !== "function") {
       throw new Error("Обробник події guildMemberAdd не є функцією");
     }
-    
+
     client.on("guildMemberAdd", guildMemberAdd);
 
     client.on("guildMemberRemove", (member) => {
