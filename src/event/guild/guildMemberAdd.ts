@@ -1,4 +1,5 @@
-import { GuildMember, EmbedBuilder, TextChannel } from "discord.js";
+import { GuildMember } from "discord.js";
+import { logToChannel } from "../../utils/logToChannel";
 
 export default async (member: GuildMember): Promise<void> => {
   try {
@@ -6,61 +7,45 @@ export default async (member: GuildMember): Promise<void> => {
       throw new Error("Недійсні дані учасника або користувача");
     }
 
-    const embed = new EmbedBuilder()
-      .setThumbnail(member.user.displayAvatarURL())
-      .setTitle("Користувач зайшов на сервер")
-      .setColor("Green")
-      .addFields(
+    const logChannelId = process.env.LOG_CHANNEL_ID;
+    if (!logChannelId) return;
+
+    await logToChannel(member.client, logChannelId, member.user, {
+      title: "Користувач покинув сервер",
+      fields: [
         {
           name: "Користувач:",
           value: `${member.user.tag} (ID: ${member.user.id})`,
           inline: true,
         },
         {
-          name: "Дата входу:",
+          name: "Дата виходу:",
           value: new Date().toLocaleString("uk-UA"),
           inline: true,
         },
         {
-          name: "Приєднався до серверу:",
-          value: member.joinedAt?.toLocaleString("uk-UA") || "Невідомо",
+          name: "Ролі:",
+          value:
+            member.roles.cache
+              .filter((role) => role.name !== "@everyone")
+              .map((r) => r.name)
+              .join(", ") || "Немає ролей",
           inline: false,
         },
         {
-          name: "Кількість учасників:",
-          value: `${member.guild.memberCount}`,
+          name: "Приєднався:",
+          value: member.joinedAt?.toLocaleString("uk-UA") || "Невідомо",
           inline: true,
-        }
-      )
-      .setFooter({
-        text: `${member.guild.name}`,
-        iconURL: member.user.displayAvatarURL(),
-      })
-      .setTimestamp();
-
-    const logChannelId = process.env.LOG_CHANNEL_ID;
-    if (!logChannelId) {
-      throw new Error("LOG_CHANNEL_ID не визначено в .env файлі");
-    }
-
-    const logChannel = member.client.channels.cache.get(
-      logChannelId
-    ) as TextChannel;
-    if (!logChannel || !(logChannel instanceof TextChannel)) {
-      throw new Error(
-        `Журнал каналу з ідентифікатором ${logChannelId} не знайдено або не є текстовим каналом`
-      );
-    }
-
-    await logChannel.send({ embeds: [embed] }).catch((error) => {
-      console.error(
-        `Не вдалося надіслати повідомлення журналу до каналу ${logChannelId}:`,
-        error
-      );
+        },
+      ],
+      thumbnailURL: member.user.displayAvatarURL(),
+      footerText: member.guild.name,
+      showTimestamp: true,
+      type: "error",
     });
   } catch (error) {
     console.error(
-      "Сталася помилка в події guildMemberAdd:",
+      "Сталася помилка в події guildMemberRemove:",
       error instanceof Error ? error.message : error
     );
   }

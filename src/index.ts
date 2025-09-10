@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { client } from "./utils/client";
+import { client } from "./client";
 
 if (!process.env.DISCORD_TOKEN) {
   throw new Error("DISCORD_TOKEN не визначений в .env файлі");

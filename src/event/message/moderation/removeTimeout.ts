@@ -1,90 +1,93 @@
 import { Message, PermissionFlagsBits } from "discord.js";
-import { createEmbed } from "../../../utils/embed";
+import { logToChannel } from "../../../utils/logToChannel";
 
 export async function removeTimeoutCommand(message: Message, args: string[]) {
-  if (!message.member?.permissions.has(PermissionFlagsBits.ModerateMembers)) {
-    const embed = createEmbed("error", message.author, {
-      title: "Немає прав",
-      description: "У тебе немає прав на **зняття таймаутів**.",
-    });
-    await message.reply({ embeds: [embed] });
-    return;
-  }
+  try {
+    const logChannelId = process.env.LOG_CHANNEL_ID;
 
-  if (args.length < 1) {
-    const embed = createEmbed("usage", message.author, {
-      title: "Використання команди",
-      description:
-        "Щоб прибрати таймаут:\n`!прибратиТаймаут @користувач [причина]` або `!прибратиТаймаут [id] [причина]`",
-    });
-    await message.reply({ embeds: [embed] });
-    return;
-  }
-
-  const mentioned = message.mentions.members?.first();
-  const providedId = args[0]?.replace(/\D/g, "");
-  const reason = args.slice(mentioned ? 1 : 1).join(" ") || "Без причини";
-
-  let target;
-  if (mentioned) target = mentioned;
-  else if (providedId) {
-    try {
-      target = await message.guild!.members.fetch(providedId);
-    } catch {
-      const embed = createEmbed("error", message.author, {
-        title: "Помилка",
-        description: `Не вдалося знайти користувача з ID ${providedId} на сервері.`,
-      });
-      await message.reply({ embeds: [embed] });
+    if (!message.member?.permissions.has(PermissionFlagsBits.ModerateMembers)) {
+      if (logChannelId) {
+        await logToChannel(message.client, logChannelId, message.author, {
+          title: "Немає прав",
+          description: "У тебе немає прав на **зняття таймаутів**.",
+          type: "error",
+        });
+      }
       return;
     }
-  } else {
-    const embed = createEmbed("usage", message.author, {
-      title: "Некоректна команда",
-      description:
-        "Правильний синтаксис: `!прибратиТаймаут @користувач [причина]` або `!прибратиТаймаут [id] [причина]`",
-    });
-    await message.reply({ embeds: [embed] });
-    return;
-  }
 
-  if (!target.isCommunicationDisabled()) {
-    const embed = createEmbed("info", message.author, {
-      title: "Інформація",
-      description: `${target.user.tag} зараз **не має таймауту**.`,
-      thumbnailURL: target.user.displayAvatarURL({
-        extension: "png",
-        size: 1024,
-      }),
-    });
-    await message.reply({ embeds: [embed] });
-    return;
-  }
+    if (args.length === 0) {
+      if (logChannelId) {
+        await logToChannel(message.client, logChannelId, message.author, {
+          title: "Використання команди",
+          description:
+            "Щоб прибрати таймаут:\n`!прибратиТаймаут @користувач [причина]` або `!прибратиТаймаут [id] [причина]`",
+          type: "info",
+        });
+      }
+      return;
+    }
 
-  try {
+    const mention = message.mentions.members?.first();
+    const id = args[0]?.replace(/\D/g, "");
+    const target =
+      mention ??
+      (id ? await message.guild!.members.fetch(id).catch(() => null) : null);
+
+    if (!target) {
+      if (logChannelId) {
+        await logToChannel(message.client, logChannelId, message.author, {
+          title: "Неможливо",
+          description: `Користувача з ID \`${id}\` не знайдено на сервері.`,
+          type: "error",
+        });
+      }
+      return;
+    }
+
+    if (!target.isCommunicationDisabled()) {
+      if (logChannelId) {
+        await logToChannel(message.client, logChannelId, message.author, {
+          title: "Інформація",
+          description: `${target.user.tag} зараз **не має таймауту**.`,
+          thumbnailURL: target.user.displayAvatarURL(),
+          type: "info",
+        });
+      }
+      return;
+    }
+
+    const reason = args.slice(1).join(" ") || "Без причини";
     await target.timeout(null, reason);
-    const embed = createEmbed("success", message.author, {
-      title: "Таймаут знятий",
-      fields: [
-        { name: "Користувач:", value: target.user.tag },
-        { name: "Модератор:", value: message.author.tag },
-        { name: "Причина:", value: reason },
-      ],
-      thumbnailURL: target.user.displayAvatarURL({
-        extension: "png",
-        size: 1024,
-      }),
-    });
-    await message.reply({ embeds: [embed] });
-  } catch {
-    const embed = createEmbed("error", message.author, {
-      title: "Помилка",
-      description: `Не вдалося прибрати таймаут ${target.user.tag}.`,
-      thumbnailURL: target.user.displayAvatarURL({
-        extension: "png",
-        size: 1024,
-      }),
-    });
-    await message.reply({ embeds: [embed] });
+
+    if (logChannelId) {
+      await logToChannel(message.client, logChannelId, message.author, {
+        title: "Таймаут знятий",
+        fields: [
+          { name: "Користувач:", value: target.user.tag },
+          { name: "Модератор:", value: message.author.tag },
+          { name: "Причина:", value: reason },
+        ],
+        thumbnailURL: target.user.displayAvatarURL(),
+        footerText: message.guild?.name,
+        showTimestamp: true,
+        type: "success",
+      });
+    }
+  } catch (err) {
+    console.error(
+      "Помилка при виконанні команди !прибратиТаймаут:",
+      err instanceof Error ? err.message : err
+    );
+
+    const logChannelId = process.env.LOG_CHANNEL_ID;
+
+    if (logChannelId) {
+      await logToChannel(message.client, logChannelId, message.author, {
+        title: "Помилка",
+        description: "Сталася помилка під час зняття таймауту.",
+        type: "error",
+      });
+    }
   }
 }

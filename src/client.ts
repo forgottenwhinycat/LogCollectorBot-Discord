@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits, Partials } from "discord.js";
-import { registerEvents } from "../utils/logger";
+import { registerEvents } from "./utils/logger";
 
 export const client = new Client({
   intents: [

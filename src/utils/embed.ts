@@ -10,13 +10,15 @@ export function createEmbed(
     description?: string;
     fields?: { name: string; value: string; inline?: boolean }[];
     thumbnailURL?: string;
+    footerText?: string;
+    showTimestamp?: boolean;
   }
 ): EmbedBuilder {
   const colors: Record<EmbedType, number> = {
-    error: 0xff0000,
-    usage: 0xe67e22,
-    success: 0x2ecc71,
-    info: 0x3498db,
+    error: 0xed4245,
+    usage: 0xfaa61a,
+    success: 0x57f287,
+    info: 0x5865f2,
   };
 
   const date = new Intl.DateTimeFormat("uk-UA", {
@@ -28,13 +30,14 @@ export function createEmbed(
     .setColor(colors[type])
     .setTitle(options.title)
     .setFooter({
-      text: `${author.username} • ${date}`,
+      text: options.footerText ?? `${author.username} • ${date}`,
       iconURL: author.displayAvatarURL({ extension: "png", size: 1024 }),
     });
 
   if (options.description) embed.setDescription(options.description);
   if (options.fields) embed.addFields(options.fields);
   if (options.thumbnailURL) embed.setThumbnail(options.thumbnailURL);
+  if (options.showTimestamp) embed.setTimestamp(new Date());
 
   return embed;
 }

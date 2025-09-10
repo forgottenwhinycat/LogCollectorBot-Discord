@@ -3,6 +3,7 @@ import { banCommand } from "./moderation/ban";
 import { unbanCommand } from "./moderation/unban";
 import { timeoutCommand } from "./moderation/timeout";
 import { removeTimeoutCommand } from "./moderation/removeTimeout";
+import { createEmbed } from "../../utils/embed";
 
 export async function moderationCommands(message: Message) {
   try {
@@ -21,8 +22,18 @@ export async function moderationCommands(message: Message) {
       case "!таймаут":
         await timeoutCommand(message, args);
         break;
-      case "!прибрататаймаут":
+      case "!прибратитаймаут":
         await removeTimeoutCommand(message, args);
+        break;
+      default:
+        await message.reply({
+          embeds: [
+            createEmbed("info", message.author, {
+              title: "Невідома команда",
+              description: `Команда \`${command}\` не розпізнана.`,
+            }),
+          ],
+        });
         break;
     }
   } catch (err) {
